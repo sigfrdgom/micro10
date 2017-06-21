@@ -147,29 +147,28 @@
     mov ah,3dh
     mov al,2h
     mov dx, offset ainventario
-    int 21h
+    int 21h  ;abre el archivo a escribir
     jc notificarerror ;por que hay error
+    ;en ax el handle del archivo
+    mov handle,ax 
     
-    
-    mov bx,ax ;mueve a bx el handle
-    
-    ;;;;;;;;;;;;;;;;; aca empezamos
     mov ah,42h
     mov al,02h
-    int 21h
-     lea dx, exito
-     mov ah,9
-     int 21h
-    
+    mov bx, handle
+    mov cx,0
+    mov dx,0
+    int 21h ;mueve el puntero al final del codumento
+              
+    mov bx,handle ;mueve a bx el handle  usar handle en lugar de ax
     mov cx,si
     mov dx, offset vector
     mov ah,40h
-    int 21h 
+    int 21h   ;Escribe en el archivo la cadena ingresada
     ;;;;;;;;;;;;;;,,
     mov cx,1
     mov dx, offset nuevaLinea
     mov ah,40h
-    int 21h
+    int 21h   ;Escribe en el archivo un enter
     
    ;;;;;;;;;ACA TERMINA 
     limpiarPantalla
@@ -178,9 +177,9 @@
     int 21h
     mov ah, 3eh
     int 21h  ;cierra archivo
-    ;pausa
     endm
-         ;ahsdfiuagsdfi hasta qui no sierve ni mierda
+         
+         
 data segment
     msalir db "presiona s para salir...",10,13,"$"
     mseleccione db "Presione el numero de lo que desea hacer:",10,13,"$"                 
@@ -219,6 +218,7 @@ data segment
     nuevaLinea db 10,13
     ;El elemento magico
     handle dw 0
+    handle1 dw 0
     
     
 ends
