@@ -101,11 +101,83 @@
     pausa
     jmp revisarInventario
     
-  endm   
+  endm    
+
+;----------------------------------------------------------------------
+;               Macro para el submenu compra
+;----------------------------------------------------------------------  
+  macro subMenuCompra
+    lea dx,smiTitulo
+    mov ah,9
+    int 21h
+    lea dx,smcVer
+    mov ah,9
+    int 21h
+    lea dx,smcIngresar
+    mov ah,9
+    int 21h
+    lea dx,smcVolver
+    mov ah,9
+    int 21h
+    ;aca para las opciones de seleccion
+    mov ax,0000
+    mov ah,1
+    int 21h
+    cmp al, '1'
+    je verCompra
+    cmp al,'2'
+    je ingresarCompra
+    cmp al,'v'
+    je inicio 
+    limpiarpantalla
+    lea dx, serrorseleccion
+    mov ah,9
+    int 21h
+    pausa
+    jmp realizarCompra
+    
+  endm 
+  
+;----------------------------------------------------------------------
+;               Macro para el submenu venta
+;----------------------------------------------------------------------  
+  macro subMenuVenta
+    lea dx,smiTitulo
+    mov ah,9
+    int 21h
+    lea dx,smvVer
+    mov ah,9
+    int 21h
+    lea dx,smvIngresar
+    mov ah,9
+    int 21h
+    lea dx,smvVolver
+    mov ah,9
+    int 21h
+    ;aca para las opciones de seleccion
+    mov ax,0000
+    mov ah,1
+    int 21h
+    cmp al, '1'
+    je verVenta
+    cmp al,'2'
+    je ingresarVenta
+    cmp al,'v'
+    je inicio 
+    limpiarpantalla
+    lea dx, serrorseleccion
+    mov ah,9
+    int 21h
+    pausa
+    jmp realizarVenta
+    
+  endm 
+  
 ;----------------------------------------------------------------------
 ;               Macro para consultar el contenido de inventario
 ;----------------------------------------------------------------------  
   macro consultarInventario
+        imprimir tiainventario
         mov al, 2 
         mov dx, offset aInventario
         mov ah, 3dh 
@@ -130,28 +202,25 @@
         finLecProducto:
         inc si
         mov impInv[si], 24h
+         
+        imprimir impInv 
+        ;lea dx, impInv
+        ;mov ah,9
+        ;int 21h;;imprime en pantalla la linea obtenida   
         
-        ;;;imprime aux
-        lea dx, impInv
-        mov ah,9
-        int 21h;;imprime en pantalla la linea obtenida   
         mov bx, handle
 	    mov ah, 3eh
-	    int 21h ; close file...
+	    int 21h ;Cierra archivo
 	    mov al, 0
 	    mov ah, 0
 	    mov dx, 0
 	    mov handle, 0
 	    mov si, 0
 	    mov impInv, 0
-	    mov cx, 0
-	    
-        ;jmp menu 
+	    mov cx, 0 
+	    pausa
   endm
    
-
-
-
 ;----------------------------------------------------------------------
 ;               Macro para limpiar la pantalla y definir un color :v
 ;----------------------------------------------------------------------  
@@ -183,12 +252,17 @@
     jc err
     mov handle, ax
     ;Crea 
-    mov ah, 40h
-    mov bx, handle
-    mov dx, offset tiainventario
-    mov cx, tiainventario_tam
-    int 21h
-    ;close c:\emu8086\vdrive\C\archivo\inventario.txt
+    ;mov ah, 40h
+    ;mov bx, handle
+    ;mov dx, offset tiainventario
+    ;mov cx, tiainventario_tam
+    ;int 21h 
+    ;mov cx,1
+    ;mov dx, offset nuevaLinea
+    ;mov ah,40h
+    ;int 21h 
+    ;close c:\emu8086\vdrive\C\archivo\inventario.txt 
+ 
     mov ah, 3eh
     mov bx, handle
     int 21h
@@ -240,32 +314,98 @@
     mov ah,1
     int 21h
   endm 
+  
+;----------------------------------------------------------------------
+;      Macro para imprimir un mensaje en cualquier parte del codigo
+;----------------------------------------------------------------------       
+       
+  macro imprimir mensaje
+    mov ax, data
+    mov ds, ax
+    mov ah,9
+    lea dx,mensaje
+    int 21h
+    
+  endm  
 ;----------------------------------------------------------------------
 ;       Para escribir algo en el archivo inventario(hay que generalizar)   
 ;----------------------------------------------------------------------  
 
-    ;desde aca hasta::::::::::--------------------->
- macro ingresarInventario
+ macro ingresarInventario  ;aca el peo
     mov si,0
     xor  vecInventario,0 
-    pedirInventario:
+    imprimir iiCodigo
+    pedirCodigoInventario:
     mov ah,1
     int 21h
+    cmp al,13
+    je okCodInv
     mov vecInventario[si],al
     inc si
+    jmp pedirCodigoInventario
+  
+    okCodInv:
+    mov vecinventario[si],124
+    inc si
+    ;pidio el codigo
+   
+    imprimir iiNombre
+    pedirNombreInventario:
+    mov ah,1
+    int 21h
     cmp al,13
-    je okInv
-    jmp pedirInventario
-    ;Logica de escritura 
-    okInv:
-    escribirInventario vecInventario   
+    je okNomInv
+    mov vecInventario[si],al
+    inc si
+    jmp pedirNombreInventario
+     
+    okNomInv:
+    mov vecinventario[si],124
+    inc si
+    ;pidio el nombre
+    
+    imprimir iiCosto
+    pedirCostoInventario:
+    mov ah,1
+    int 21h
+    cmp al,13
+    je okCosInv
+    mov vecInventario[si],al
+    inc si
+    jmp pedirCostoInventario
+     
+    okCosInv:
+    mov vecinventario[si],124
+    inc si
+    ;pidio el costo 
+    
+    imprimir iiExistencia
+    pedirExistenciaInventario:
+    mov ah,1
+    int 21h
+    cmp al,13
+    je okExiInv
+    mov vecInventario[si],al
+    inc si
+    jmp pedirExistenciaInventario
+     
+    okExiInv:
+    mov vecInventario[si],10
+    inc si
+    mov vecInventario[si],13
+    mov contador1,si
+    ;pidio la Existencia
+    ;Termino de llenar y ahora escribira en el archivo
+    
+    escribirInventario vecInventario
  endm   
      
 ;----------------------------------------------------------------------
-;       Para escribir lo ingresado en el archivo inventario
+;       Para escribir lo ingresado[ingresarInventario] en el archivo inventario
 ;----------------------------------------------------------------------     
  macro escribirInventario vector
-    limpiarpantalla
+    ;limpiarpantalla 
+    imprimir grabando
     editarInventario:
     mov ah,3dh
     mov al,2h
@@ -274,30 +414,149 @@
     jc notificarerror ;por que hay error
     ;en ax el handle del archivo
     mov handle,ax 
-    mov ah,42h
-    mov al,02h
+    
+    leerInv:
     mov bx, handle
-    mov cx,0
-    mov dx,0
-    int 21h ;mueve el puntero al final del documento :v 
-    ;Sigfrid fue :v          
-    mov bx,handle ;mueve a bx el handle  usar handle en lugar de ax
-    mov cx,si
-    mov dx, offset vector
-    mov ah,40h
-    int 21h   ;Escribe en el archivo la cadena ingresada
     mov cx,1
-    mov dx, offset nuevaLinea
+    mov dx, offset impInvSig
+    mov ah,3fh
+    int 21h
+    
+    cmp ax,0
+    jz finLeerInv
+    mov dl, impInvSig[0]
+    mov impInv[si],dl
+    inc si
+    inc contador2
+    jmp leerInv
+    
+    finLeerInv:
+    mov contador,si
+    mov si,0
+    mov bx, handle
+    mov dx, offset vector
+    mov cx,contador1
     mov ah,40h
-    int 21h   ;Escribe en el archivo un enter
-     
+    int 21h
+    
     limpiarPantalla
-    lea dx, exito
+    lea dx, exitoInventario
     mov ah,9
     int 21h
     mov ah, 3eh
-    int 21h  ;cierra archivo mostrando un mensaje de exito
-    endm
+    int 21h  ;cierra archivo mostrando un mensaje de exito 
+    limpiar vector;;cambiar este nombre
+ endm 
+ 
+;----------------------------------------------------------------------
+;      Macro para limpiar un vector luego de escribir
+;----------------------------------------------------------------------       
+       
+  macro limpiar vector
+    mov cx, contador1
+    mov si,0
+    limpiarV:
+    mov vector[si],0
+    inc si
+    loop limpiarV
+    mov si,0
+    mov contador1,0
+    mov ax,0
+    mov bx,0
+    mov cx,0
+    mov dx,0
+    mov contador,0
+    mov contador2,0
+    
+  endm  
+  
+;----------------------------------------------------------------------
+;      Macro para realizar una compra
+;----------------------------------------------------------------------       
+       
+  macro realizarCompra
+    imprimir iiCodigo
+    mov si,9
+        codigoCompra:
+        mov ah,1
+        int 21h
+        cmp al, 13
+        je salircodigocompra  
+        mov compra[si], al
+        inc si
+        jmp codigoCompra 
+        salircodigocompra:
+            ;mueve a codigo compra el codigo
+            mov dl, compra[9]
+            mov codigoBuscar[0], dl           
+            
+            mov dl, compra[10]
+            mov codigoBuscar[1], dl           
+            
+            mov dl, compra[11]
+            mov codigoBuscar[2], dl           
+            
+            mov dl, compra[12]
+            mov codigoBuscar[3], dl
+            
+        imprimir espera ;Mensaje de buscando. 
+            
+            mov al, 2 
+            mov dx, offset aInventario
+            mov ah, 3dh 
+            int 21h
+            mov handle, ax; Abre el archivo de inventario.
+            
+            mov si, 0
+            mov cuantosLleva, 0
+            
+            leerInvByte:         ;Lee el archivo de inventario byte a byte.
+            
+                mov bx, handle
+                mov cx, 1
+                mov dx, offset impInvSig
+                mov ah, 3fh
+                int 21h
+
+                cmp ax, 0
+                jz FIN9 
+                
+                cmp impInvSig[0], 07ch
+                je leerInvByte
+                
+                mov dl, impInvSig[0]
+                cmp dl, codigoBuscar[si]
+                je finLeerInvByte
+                jne leer8
+                
+                jmp leerInvByte
+
+            finLeerInvByte:
+            
+                inc si
+                inc cuantosLLeva
+                cmp cuantosLleva, 4
+                je FIN7
+                jmp leerInvByte
+            
+            leer8:
+                mov si, 0 
+                mov cuantosLleva, 0
+                jmp leerInvByte
+                
+            FIN7:
+                mov cuantosLleva, 999
+	        
+	        FIN9:   
+	            cmp cuantosLleva, 999
+	            jne noExiste 
+	            
+	        noExiste:
+	        imprimir noExisteProducto     
+         
+  endm   
+  
+  
 ;----------------------------------------------------------------------
 ;       Fin de las macros :v
 ;----------------------------------------------------------------------     
@@ -331,12 +590,32 @@ data segment
     smiTitulo db "Que deseas hacer, presiona el numero",10,13,"$"
     smiVer db "-1-. Ver/Consultar inventario",10,13,"$"
     smiIngresar db "-2-. Ingresar un nuevo producto",10,13,"$"
-    smiVolver db "-v-. Volver",10,13,"$"
+    smiVolver db "-v-. Volver",10,13,"$"  
+    
+    ;Mensajes del submenu Compra
+    smcVer db "-1-. Ver/Consultar compras",10,13,"$"
+    smcIngresar db "-2-. Realizar una compra",10,13,"$"
+    smcVolver db "-v-. Volver",10,13,"$"  
+    
+    ;Mensajes del submenu venta
+    smvVer db "-1-. Ver/Consultar ventas",10,13,"$"
+    smvIngresar db "-2-. Realizar una venta",10,13,"$"
+    smvVolver db "-v-. Volver",10,13,"$"
+    
+    ;Mensajes de ingreso inventario ii
+    iiCodigo db "Ingrese el codigo del producto: ",10,13,"$"
+    iiNombre db 10,13,"Ingrese el nombre del producto: ",10,13,"$"
+    iiCosto db 10,13,"Ingrese el precio del producto: ",10,13,"$"
+    iiExistencia db 10,13,"Ingrese la existencia del producto ",10,13,"$"
      
-    ;mensajes erorres y varios
+    ;Mensajes erorres y varios
     errordeescritura db "Error en la escritura",10,13,"$"
     exito db "Exito en la operacion",10,13,"$"
+    exitoInventario db "producto ingresado correctamente.",10,13,"$"
     espera db "En proceso, espera un momento",10,13,"$"
+    grabando db "Grabando en archivo",10,13,"$"
+    noExisteProducto db 10,13,"No existe el producto",10,13,"$"
+    
     ;Define el directorio, su ruta y los archivos  a
     ainventario db "c:\archivos\inventario.txt",0
     acompra db "c:\archivos\compra.txt",0
@@ -344,7 +623,7 @@ data segment
     directorio db "c:\archivos",0 
     
     ;Define los texto iniciales de los archivos y su tamaño tia
-    tiainventario db "    idProducto-nombre-costo-existencia",10,13 
+    tiainventario db "idProducto-nombre-costo-existencia",10,13,"$"
     tiainventario_tam = $ - offset tiainventario
     tiacompra db "   codProducto-cantidad-pago-fecha",10,13
     tiacompra_tam = $ - offset tiacompra
@@ -362,6 +641,12 @@ data segment
     ;variables utilitarias
     impInv db "$"
     impInvSig db "$"
+    contador dw 0
+    contador1 dw 0
+    contador2 db 0 
+    compra db 128 dup(0)  ;ramakaso
+    codigoBuscar db 0,0,0,0
+    cuantosLleva dw 0
     
 ends
 
@@ -417,35 +702,69 @@ start:
         lea dx, sinventario
         mov ah,9
         int 21h ;muestra el mensaje
+        mov ah,10
         consultarInventario
-        pausa 
+        ;pausa 
         jmp revisarInventario
 
 ;======================================================================    
 ;              Aca se trabajan las compras
 ;======================================================================    
 
+    realizarCompra: ;Muestra el subMenu Compra
+        limpiarPantalla
+        subMenuCompra
+        pausa
+        jmp inicio 
     
-    realizarCompra:    ;Aca se realiza una compra
-    limpiarPantalla
-    lea dx, scompra
-    mov ah,9
-    int 21h
-    pausa
-    jmp inicio    
-
+    ingresarCompra:
+        limpiarPantalla
+        realizarCompra ;Trabajar en como se ingresa
+        pausa
+        jmp realizarCompra    
+        
+    verCompra:
+        limpiarPantalla
+        lea dx, scompra
+        mov ah,9
+        int 21h ;muestra el mensaje
+        mov ah,10
+        ;consultarCompra
+        pausa 
+        jmp realizarCompra
+ 
 ;======================================================================    
 ;              Aca se trabajan las ventas
 ;======================================================================    
 
     
-    realizarVenta:     ;Aca se realiza una venta
-    limpiarPantalla
-    lea dx, sventa
-    mov ah,9
-    int 21h  
-    pausa
-    jmp inicio
+    
+    realizarVenta: ;Muestra el subMenu Compra
+        limpiarPantalla
+        subMenuVenta
+        pausa
+        jmp inicio 
+    
+    ingresarVenta:
+        limpiarPantalla
+        ;realizarVenta ;Trabajar en como se ingresa
+        pausa
+        jmp realizarVenta    
+        
+    verVenta:
+        limpiarPantalla
+        lea dx, sventa
+        mov ah,9
+        int 21h ;muestra el mensaje
+        mov ah,10
+        ;consultarVenta
+        pausa 
+        jmp realizarVenta
+
+
+;======================================================================    
+;              Se notifica al usuario si hay errore R/W
+;======================================================================    
     
     notificarerror:
     lea dx, errordeescritura
@@ -540,4 +859,40 @@ mov ah,40h
 
 mov ah, 3eh
 int 21h
-jmp menu
+jmp menu       
+
+;asi grababa al inicio
+;mov ah,42h
+    ;mov al,02h
+    ;mov bx, handle
+    ;mov cx,0
+    ;mov dx,0
+    ;int 21h ;mueve el puntero al final del documento :v 
+    ;Sigfrid fue :v          
+    ;mov bx,handle ;mueve a bx el handle  usar handle en lugar de ax
+    ;mov cx,si
+    ;mov dx, offset vector
+    ;mov ah,40h
+    ;int 21h   ;Escribe en el archivo la cadena ingresada
+    ;mov cx,1
+    ;mov dx, offset nuevaLinea
+    ;mov ah,40h
+    ;int 21h   ;Escribe en el archivo un enter
+     
+   
+ realizarCompra:    ;Aca se realiza una compra
+    limpiarPantalla
+    lea dx, scompra
+    mov ah,9
+    int 21h
+    realizarCompra
+    pausa 
+    jmp inicio      
+
+
+
+
+
+
+
+    
