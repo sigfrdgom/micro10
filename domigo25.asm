@@ -757,7 +757,8 @@
         mov si,0
         mov bytesRcod,0 
         
-            leerInv: 
+            leerInv:
+                ;pausa 
                mov bx, handle
                mov cx,1
                mov dx, offset lectura
@@ -790,7 +791,7 @@
         mov coincidencias,999     
           mov dx, offset ainventario
           mov ah, 3eh
-          int 21h
+          int 21h   ;cierra archivo
         cmp coincidencias,999
         je yaExisteProducto    
   
