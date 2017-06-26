@@ -239,9 +239,10 @@
                mov ah, 3fh
                int 21h ;            
                cmp ax,0               
-               jz salidaComCon               
-               mov lectura[34],13
-               mov lectura[35],"$"
+               jz salidaComCon
+                              
+               mov lectura[25],13
+               mov lectura[26],"$"
                imprimir lectura
                jne leerComCon
  
@@ -270,8 +271,8 @@
                int 21h ;            
                cmp ax,0               
                jz salidaVenCon               
-               mov lectura[34],13
-               mov lectura[35],"$"
+               mov lectura[25],13
+               mov lectura[26],"$"
                imprimir lectura
                jne leerVenCon
  
