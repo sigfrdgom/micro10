@@ -240,7 +240,7 @@
                int 21h ;            
                cmp ax,0               
                jz salidaComCon
-                              
+               mov lectura[24],10               
                mov lectura[25],13
                mov lectura[26],"$"
                imprimir lectura
@@ -270,7 +270,8 @@
                mov ah, 3fh
                int 21h ;            
                cmp ax,0               
-               jz salidaVenCon               
+               jz salidaVenCon
+               mov lectura[24],10               
                mov lectura[25],13
                mov lectura[26],"$"
                imprimir lectura
@@ -1429,7 +1430,8 @@ data segment
     tiacompra db "   codProducto-cantidad-pago-fecha",10,13
     tiacompra_tam = $ - offset tiacompra
     tiaventa db  "   codProducto-cantidad-pago-fecha",10,13
-    tiaventa_tam = $ - offset tiaventa
+    tiaventa_tam = $ - offset tiaventa 
+    noDisponible db "Lo sentimos la funcion no esta disponible en la v1.0",10,13,"$"
    
     ;Lineas para saltos y vectores de ingreso
     vecInventario db 255 dup("$")
@@ -1578,7 +1580,8 @@ start:
         mov ah,9
         int 21h ;muestra el mensaje
         mov ah,10
-        consultarCompra
+        ;consultarCompra
+        imprimir noDisponible
         pausa 
         jmp realizarCompra 
     
@@ -1613,7 +1616,8 @@ start:
         mov ah,9
         int 21h ;muestra el mensaje
         mov ah,10
-        consultarVenta
+        ;consultarVenta
+        imprimir noDisponible
         pausa 
         jmp realizarVenta
     noExisteV:
