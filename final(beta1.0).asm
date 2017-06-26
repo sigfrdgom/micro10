@@ -1577,7 +1577,7 @@ start:
         mov ah,9
         int 21h ;muestra el mensaje
         mov ah,10
-        ;consultarCompra
+        consultarCompra
         pausa 
         jmp realizarCompra 
     
@@ -1612,7 +1612,7 @@ start:
         mov ah,9
         int 21h ;muestra el mensaje
         mov ah,10
-        ;consultarVenta
+        consultarVenta
         pausa 
         jmp realizarVenta
     noExisteV:
@@ -1657,166 +1657,3 @@ end start ; set entry point and stop the assembler.
 ;======================================================================    
 ;              Lineas de reservoir borrar al final de la creacion
 ;======================================================================    
-
-
-;mov ah,3dh
-;mov al, 0h lectura, 1h escritura, 2 r&w
-;mov dx, offset nombrearchivo
-;int 21h
-;mov ah 3fh para leer archivo
-;mov bx,ax
-;mov cx,10
-;mov dx, offset vec
-;int 21h
-;mov ah,9
-;int 21h
-;mov ah, 3eh
-;int 21h cierra archivo 
-;para pedir archivo
-;pedir:
-;mov ah,1
-;int 21
-;mov vec[si],al
-;inc si
-;cmp al,0dh
-;ja pedir
-;jb pedir
-
-;editar:
-;mov ah,3dh
-;mov al,1h
-;mov dx, offset nombre
-;int 21h
-;jc salir por que hay error
-;mov bx,ax
-;mov cx,si size de caracteres a grabar
-;mov ah,40h
-;int 21h
-;imprime msaj  macro de creado
-;mov ah, 3eh
-;int 21h  ;cierra archivo
-        
-        
-3dh para abrir
-mov ah,3dh
-mov al, 0h ;0h abrir, 1 lectura, 2 para ambos
-
-mov ah,1
-int 21h
-mov vec[si],al
-inc si
-cmp al,0dh
-ja pedir
-jb pedir
-
-mov ah, 3dh
-mov al, 1h
-mov dx, offset nombre
-int 21h
-jc salir
-mov bx,ax
-mov cx,si
-mod dx,offset vec
-mov ah,40h
- int 21h
-
-mov ah, 3eh
-int 21h
-jmp menu       
-
-;asi grababa al inicio
-;mov ah,42h
-    ;mov al,02h
-    ;mov bx, handle
-    ;mov cx,0
-    ;mov dx,0
-    ;int 21h ;mueve el puntero al final del documento :v 
-    ;Sigfrid fue :v          
-    ;mov bx,handle ;mueve a bx el handle  usar handle en lugar de ax
-    ;mov cx,si
-    ;mov dx, offset vector
-    ;mov ah,40h
-    ;int 21h   ;Escribe en el archivo la cadena ingresada
-    ;mov cx,1
-    ;mov dx, offset nuevaLinea
-    ;mov ah,40h
-    ;int 21h   ;Escribe en el archivo un enter
-     
-   
- realizarCompra:    ;Aca se realiza una compra
-    limpiarPantalla
-    lea dx, scompra
-    mov ah,9
-    int 21h
-    realizarCompra
-    pausa 
-    jmp inicio  
-    
-    
-    
-        ;viejo ingresar venta
-    limpiarVenta ;Peligroso cuidado al usar
-    
-    imprimir iiCodigo
-    mov cx,4
-    mov si,0
-        pedirCodigoV:
-        mov ah,1
-        int 21h
-        cmp al,13
-        je okCodigoV:
-        
-        mov dl, codigo[1]
-        mov codigo[0],dl
-        mov dl, codigo[2]
-        mov codigo[1],dl
-        mov dl, codigo[3]
-        mov codigo[2],dl
-        mov codigo[3],al
-        loop pedirCodigoV
-    
-    okCodigoV:
-    realizarVenta codigo  ;validad si existe;si existe continua
-    imprimir ivCantidad
-    mov cx,3
-    mov si,0
-        pedirCantidadV:
-        mov ah,1
-        int 21h
-        cmp al,13
-        je okCantidadV:
-         mov dl, cantidad[1]
-        mov cantidad[0],dl
-        mov dl, cantidad[2]
-        mov cantidad[1],dl
-        mov cantidad[2],al
-        loop pedirCantidadV
-    
-    okCantidadV:
-    imprimir ivPago
-    mov cx,4
-    mov si,0
-        pedirPagoV:
-        mov ah,1
-        int 21h
-        cmp al,13
-        je okPagoV:
-        mov pago[si],al   ;pide pago
-        inc si
-        loop pedirPagoV
-    
-    okPagoV:
-    imprimir ivFecha
-    mov cx,10
-    mov si,0
-        pedirFechaV:
-        mov ah,1
-        int 21h
-        cmp al,13
-        je okFechaV:
-        mov fecha[si],al  ;pide fecha en formato 12|12|2012
-        inc si
-        loop pedirFechaV
-    
-    okFechaV:
-    escribirVenta codigo cantidad pago fecha       
