@@ -1303,6 +1303,7 @@
 ;---------------------------------------------------------------------- 
  
  macro ayuda
+    limpiarPantalla
     imprimir mayuda
     imprimir mayuda1
     imprimir mayuda2
